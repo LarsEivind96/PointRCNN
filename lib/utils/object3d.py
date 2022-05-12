@@ -28,10 +28,23 @@ class Object3d(object):
         self.level_str = None
         self.level = self.get_obj_level()
 
+    # TODO: Change this function
     def get_obj_level(self):
         height = float(self.box2d[3]) - float(self.box2d[1]) + 1
 
-        if height >= 40 and self.trucation <= 0.15 and self.occlusion <= 0:
+        if self.trucation <= 0.15 and self.occlusion <= 0:
+            self.level_str = 'Easy'
+            return 1  # Easy
+        elif self.trucation <= 0.3 and self.occlusion <= 1:
+            self.level_str = 'Moderate'
+            return 2  # Moderate
+        elif self.trucation <= 0.5 and self.occlusion <= 2:
+            self.level_str = 'Hard'
+            return 3  # Hard
+        else:
+            self.level_str = 'UnKnown'
+            return 4
+        '''if height >= 40 and self.trucation <= 0.15 and self.occlusion <= 0:
             self.level_str = 'Easy'
             return 1  # Easy
         elif height >= 25 and self.trucation <= 0.3 and self.occlusion <= 1:
@@ -42,7 +55,7 @@ class Object3d(object):
             return 3  # Hard
         else:
             self.level_str = 'UnKnown'
-            return 4
+            return 4'''
 
     def generate_corners3d(self):
         """

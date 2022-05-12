@@ -63,6 +63,7 @@ def rotate_pc_along_y_torch(pc, rot_angle):
     return pc
 
 
+# NB: Their z is horizontal while our z is vertical. Do we need to change this?
 def boxes3d_to_corners3d(boxes3d, rotate=True):
     """
     :param boxes3d: (N, 7) [x, y, z, h, w, l, ry]

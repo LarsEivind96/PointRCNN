@@ -7,7 +7,7 @@ cfg = __C
 
 # 0. basic config
 __C.TAG = 'default'
-__C.CLASSES = 'Car'
+__C.CLASSES = 'reg_dump'
 
 __C.INCLUDE_SIMILAR_TYPE = False
 
@@ -23,7 +23,8 @@ __C.GT_AUG_RAND_NUM = False
 __C.GT_AUG_APPLY_PROB = 0.75
 __C.GT_AUG_HARD_RATIO = 0.6
 
-__C.PC_REDUCE_BY_RANGE = True
+__C.PC_REDUCE_BY_RANGE = False # NB: Changed from True
+# TODO: Change this. Do we need this? Change to infinite ish
 __C.PC_AREA_SCOPE = np.array([[-40, 40],
                               [-1,   3],
                               [0, 70.4]])  # x, y, z scope in rect camera coords
@@ -85,6 +86,7 @@ __C.RCNN.USE_RPN_FEATURES = True
 __C.RCNN.USE_MASK = True
 __C.RCNN.MASK_TYPE = 'seg'
 __C.RCNN.USE_INTENSITY = False
+# TODO: Maybe set this to false, if this is related to distance from camera (resolution)
 __C.RCNN.USE_DEPTH = True
 __C.RCNN.USE_SEG_SCORE = False
 __C.RCNN.ROI_SAMPLE_JIT = False
