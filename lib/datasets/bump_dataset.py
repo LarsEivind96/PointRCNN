@@ -15,12 +15,13 @@ class BumpDataset(torch_data.Dataset):
         split_dir = os.path.join(root_dir, 'KITTI', 'ImageSets', split + '.txt')
         self.image_idx_list = [x.strip() for x in open(split_dir).readlines()]
         self.num_sample = self.image_idx_list.__len__()
+        self.num_samples = self.image_idx_list.__len__()
 
-        self.image_dir = os.path.join(self.imageset_dir, 'image_2')
+        # self.image_dir = os.path.join(self.imageset_dir, 'image_2')
         self.lidar_dir = os.path.join(self.imageset_dir, 'velodyne')
-        self.calib_dir = os.path.join(self.imageset_dir, 'calib')
+        # self.calib_dir = os.path.join(self.imageset_dir, 'calib')
         self.label_dir = os.path.join(self.imageset_dir, 'label_2')
-        self.plane_dir = os.path.join(self.imageset_dir, 'planes')
+        # self.plane_dir = os.path.join(self.imageset_dir, 'planes')
 
     def get_image(self, idx):
         assert False, 'DO NOT USE cv2 NOW, AVOID DEADLOCK'
@@ -37,9 +38,8 @@ class BumpDataset(torch_data.Dataset):
         width, height = im.size
         return height, width, 3
 
-    # TODO: Check what this returns after the velodynes are downloaded
     def get_lidar(self, idx):
-        lidar_file = os.path.join(self.lidar_dir, '%06d.bin' % idx)
+        lidar_file = os.path.join(self.lidar_dir, '{}.bin'.format(idx))
         assert os.path.exists(lidar_file)
         return np.fromfile(lidar_file, dtype=np.float32).reshape(-1, 4)
 
@@ -51,7 +51,7 @@ class BumpDataset(torch_data.Dataset):
 
     # Creates a 3D object from each line in label_file
     def get_label(self, idx):
-        label_file = os.path.join(self.label_dir, '%06d.txt' % idx)
+        label_file = os.path.join(self.label_dir, '{}.txt'.format(idx))
         assert os.path.exists(label_file)
         return kitti_utils.get_objects_from_label(label_file)
 

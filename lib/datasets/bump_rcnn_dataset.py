@@ -12,9 +12,9 @@ from lib.config import cfg
 
 def debug_print(arg):
     frameinfo = currentframe()
-    print(arg, ":", frameinfo.f_back.f_lineno)
+    print(arg, ":", "Line num: ", frameinfo.f_back.f_lineno)
 
-class KittiRCNNDataset(BumpDataset):
+class BumpRCNNDataset(BumpDataset):
     def __init__(self, root_dir, npoints=16384, split='train', classes='reg_dump', mode='TRAIN', random_select=True,
                  logger=None, rcnn_training_roi_dir=None, rcnn_training_feature_dir=None, rcnn_eval_roi_dir=None,
                  rcnn_eval_feature_dir=None, gt_database_dir=None):
@@ -84,12 +84,12 @@ class KittiRCNNDataset(BumpDataset):
             if mode == 'TRAIN':
                 self.preprocess_rpn_training_data()
             else:
-                self.sample_id_list = [int(sample_id) for sample_id in self.image_idx_list]
+                self.sample_id_list = [sample_id for sample_id in self.image_idx_list]
                 self.logger.info('Load testing samples from %s' % self.imageset_dir)
                 self.logger.info('Done: total test samples %d' % len(self.sample_id_list))
         elif cfg.RCNN.ENABLED:
             for idx in range(0, self.num_sample):
-                sample_id = int(self.image_idx_list[idx])
+                sample_id = self.image_idx_list[idx]
                 obj_list = self.filtrate_objects(self.get_label(sample_id))
                 if len(obj_list) == 0:
                     # logger.info('No gt classes: %06d' % sample_id)
@@ -106,21 +106,23 @@ class KittiRCNNDataset(BumpDataset):
         """
         self.logger.info('Loading %s samples from %s ...' % (self.mode, self.label_dir))
         for idx in range(0, self.num_sample):
-            sample_id = int(self.image_idx_list[idx])
+            sample_id = self.image_idx_list[idx]
             obj_list = self.filtrate_objects(self.get_label(sample_id))
             if len(obj_list) == 0:
-                # self.logger.info('No gt classes: %06d' % sample_id)
+                self.logger.info('No gt classes: {}'.format(sample_id))
                 continue
+            print("damane", torch.cuda.current_device())
             self.sample_id_list.append(sample_id)
 
         self.logger.info('Done: filter %s results: %d / %d\n' % (self.mode, len(self.sample_id_list),
                                                                  len(self.image_idx_list)))
 
     def get_label(self, idx):
-        if idx < 10000:
-            label_file = os.path.join(self.label_dir, '%06d.txt' % idx)
+        '''if idx < 10000:
+            label_file = os.path.join(self.label_dir, '.txt'.format(idx))
         else:
-            label_file = os.path.join(self.aug_label_dir, '%06d.txt' % idx)
+            label_file = os.path.join(self.aug_label_dir, '.txt'.format(idx))'''
+        label_file = os.path.join(self.label_dir, '{}.txt'.format(idx))
 
         assert os.path.exists(label_file)
         return kitti_utils.get_objects_from_label(label_file)
@@ -161,12 +163,12 @@ class KittiRCNNDataset(BumpDataset):
         type_whitelist = self.classes
         if self.mode == 'TRAIN' and cfg.INCLUDE_SIMILAR_TYPE:
             type_whitelist = list(self.classes)
-            if 'reg_dump' in self.classes:
+            '''if 'reg_dump' in self.classes:
                 debug_print('reg_dump class')
                 # type_whitelist.append('Van')
             if 'bus_dump' in self.classes:  # or 'Cyclist' in self.classes:
                 debug_print('bus_dump class')
-                # type_whitelist.append('Person_sitting')
+                # type_whitelist.append('Person_sitting')'''
 
         valid_obj_list = []
         for obj in obj_list:
@@ -251,15 +253,15 @@ class KittiRCNNDataset(BumpDataset):
             raise NotImplementedError
 
     def get_rpn_sample(self, index):
-        sample_id = int(self.sample_id_list[index])
-        if sample_id < 10000:
-            calib = self.get_calib(sample_id)
+        sample_id = self.sample_id_list[index]
+        if True: # sample_id < 10000: #NB: Changed this
+            # calib = self.get_calib(sample_id)
             # img = self.get_image(sample_id)
-            img_shape = self.get_image_shape(sample_id)
+            # img_shape = self.get_image_shape(sample_id)
             pts_lidar = self.get_lidar(sample_id)
 
             # get valid point (projected points should be in image)
-            pts_rect = calib.lidar_to_rect(pts_lidar[:, 0:3])
+            pts_rect = pts_lidar[:, 0:3] # calib.lidar_to_rect(pts_lidar[:, 0:3])
             pts_intensity = pts_lidar[:, 3]
         else:
             calib = self.get_calib(sample_id % 10000)
@@ -811,7 +813,7 @@ class KittiRCNNDataset(BumpDataset):
             raise NotImplementedError
 
     def get_proposal_from_file(self, index):
-        sample_id = int(self.image_idx_list[index])
+        sample_id = self.image_idx_list[index]
         proposal_file = os.path.join(self.rcnn_eval_roi_dir, '%06d.txt' % sample_id)
         roi_obj_list = kitti_utils.get_objects_from_label(proposal_file)
 
@@ -897,7 +899,7 @@ class KittiRCNNDataset(BumpDataset):
         return sample_dict
 
     def get_rcnn_training_sample_batch(self, index):
-        sample_id = int(self.sample_id_list[index])
+        sample_id = self.sample_id_list[index]
         rpn_xyz, rpn_features, rpn_intensity, seg_mask = \
             self.get_rpn_features(self.rcnn_training_feature_dir, sample_id)
 
@@ -1100,7 +1102,7 @@ class KittiRCNNDataset(BumpDataset):
         return roi_boxes3d, iou_of_rois
 
     def get_rcnn_sample_jit(self, index):
-        sample_id = int(self.sample_id_list[index])
+        sample_id = self.sample_id_list[index]
         rpn_xyz, rpn_features, rpn_intensity, seg_mask = \
             self.get_rpn_features(self.rcnn_training_feature_dir, sample_id)
 

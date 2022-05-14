@@ -4,9 +4,12 @@
 *_ext*
 /output
 *.cu.o
-/data
+/data2
 **/build
 *.png
 **/*.egg-info
 **/dist
 tools/gt_database/
+venv/
+venvdamane/
+requirements.txt
