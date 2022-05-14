@@ -14,7 +14,7 @@ np.random.seed(1024)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', type=str, default='generator')
-parser.add_argument('--class_name', type=str, default='Car')
+parser.add_argument('--class_name', type=str, default='reg_dump')
 parser.add_argument('--save_dir', type=str, default='./../data/KITTI/aug_scene/training')
 parser.add_argument('--split', type=str, default='train')
 parser.add_argument('--gt_database_dir', type=str, default='gt_database/train_gt_database_3level_Car.pkl')
@@ -22,7 +22,7 @@ parser.add_argument('--include_similar', action='store_true', default=False)
 parser.add_argument('--aug_times', type=int, default=4)
 args = parser.parse_args()
 
-PC_REDUCE_BY_RANGE = True
+PC_REDUCE_BY_RANGE = False # NB: Changed this
 if args.class_name == 'Car':
     PC_AREA_SCOPE = np.array([[-40, 40], [-1, 3], [0, 70.4]])  # x, y, z scope in rect camera coords
 else:
@@ -67,14 +67,10 @@ class AugSceneGenerator(KittiDataset):
     def __init__(self, root_dir, gt_database=None, split='train', classes=args.class_name):
         super().__init__(root_dir, split=split)
         self.gt_database = None
-        if classes == 'Car':
-            self.classes = ('Background', 'Car')
-        elif classes == 'People':
-            self.classes = ('Background', 'Pedestrian', 'Cyclist')
-        elif classes == 'Pedestrian':
-            self.classes = ('Background', 'Pedestrian')
-        elif classes == 'Cyclist':
-            self.classes = ('Background', 'Cyclist')
+        if classes == 'reg_dump':
+            self.classes = ('road', 'reg_dump')
+        elif classes == 'bus_dump':
+            self.classes = ('road', 'bus_dump')
         else:
             assert False, "Invalid classes: %s" % classes
 
@@ -256,7 +252,7 @@ class AugSceneGenerator(KittiDataset):
 
             # gt_boxes3d of current label
             obj_list = self.filtrate_objects(self.get_label(sample_id))
-            if args.class_name != 'Car' and obj_list.__len__() == 0:
+            if args.class_name != 'reg_dump' and obj_list.__len__() == 0:
                 continue
 
             # augment one scene

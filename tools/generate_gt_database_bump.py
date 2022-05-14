@@ -5,7 +5,7 @@ import pickle
 import torch
 
 import lib.utils.roipool3d.roipool3d_utils as roipool3d_utils
-from lib.datasets.kitti_dataset import KittiDataset
+from lib.datasets.bump_dataset import BumpDataset
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -15,7 +15,7 @@ parser.add_argument('--split', type=str, default='train')
 args = parser.parse_args()
 
 
-class GTDatabaseGenerator(KittiDataset):
+class GTDatabaseGenerator(BumpDataset):
     def __init__(self, root_dir, split='train', classes=args.class_name):
         super().__init__(root_dir, split=split)
         self.gt_database = None
@@ -47,11 +47,11 @@ class GTDatabaseGenerator(KittiDataset):
         gt_database = []
         # image_idx_list is the list of filenames
         for idx, sample_id in enumerate(self.image_idx_list):
-            sample_id = int(sample_id)
-            print('process gt sample (id=%06d)' % sample_id)
+            sample_id = sample_id
+            print('process gt sample (id={})'.format(sample_id))
 
             pts_lidar = self.get_lidar(sample_id)
-            calib = self.get_calib(sample_id)
+            # calib = self.get_calib(sample_id)
             # pts_rect = calib.lidar_to_rect(pts_lidar[:, 0:3])
             pts_rect = pts_lidar[:, 0:3]
             pts_intensity = pts_lidar[:, 3]

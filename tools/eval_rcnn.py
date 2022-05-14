@@ -356,7 +356,7 @@ def eval_one_epoch_rcnn(model, dataloader, epoch_id, result_dir, logger):
             cls_valid_mask = ((gt_iou >= cfg.RCNN.CLS_FG_THRESH) | (gt_iou <= cfg.RCNN.CLS_BG_THRESH)).float()
             cls_acc = ((pred_classes == cls_label.long()).float() * cls_valid_mask).sum() / max(cls_valid_mask.sum(), 1.0)
 
-            iou_thresh = 0.7 if cfg.CLASSES == 'Car' else 0.5
+            iou_thresh = 0.7 if cfg.CLASSES == 'reg_dump' else 0.5
             cls_label_refined = (gt_iou >= iou_thresh).float()
             cls_acc_refined = (pred_classes == cls_label_refined.long()).float().sum() / max(cls_label_refined.shape[0], 1.0)
 
@@ -445,7 +445,7 @@ def eval_one_epoch_rcnn(model, dataloader, epoch_id, result_dir, logger):
 
     if cfg.TEST.SPLIT != 'test':
         logger.info('Averate Precision:')
-        name_to_class = {'Car': 0, 'Pedestrian': 1, 'Cyclist': 2}
+        name_to_class = {'reg_dump': 0, 'bus_dump': 1}# {'Car': 0, 'Pedestrian': 1, 'Cyclist': 2}
         ap_result_str, ap_dict = kitti_evaluate(dataset.label_dir, final_output_dir, label_split_file=split_file,
                                                 current_class=name_to_class[cfg.CLASSES])
         logger.info(ap_result_str)
@@ -673,7 +673,7 @@ def eval_one_epoch_joint(model, dataloader, epoch_id, result_dir, logger):
 
     if cfg.TEST.SPLIT != 'test':
         logger.info('Averate Precision:')
-        name_to_class = {'Car': 0, 'Pedestrian': 1, 'Cyclist': 2}
+        name_to_class = {'reg_dump': 0, 'bus_dump': 1}# {'Car': 0, 'Pedestrian': 1, 'Cyclist': 2}
         ap_result_str, ap_dict = kitti_evaluate(dataset.label_dir, final_output_dir, label_split_file=split_file,
                                                 current_class=name_to_class[cfg.CLASSES])
         logger.info(ap_result_str)

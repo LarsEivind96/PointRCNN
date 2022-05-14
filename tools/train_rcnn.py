@@ -12,7 +12,7 @@ from functools import partial
 
 from lib.net.point_rcnn import PointRCNN
 import lib.net.train_functions as train_functions
-from lib.datasets.kitti_rcnn_dataset import KittiRCNNDataset
+from lib.datasets.bump_rcnn_dataset import BumpRCNNDataset
 from lib.config import cfg, cfg_from_file, save_config_to_file
 import tools.train_utils.train_utils as train_utils
 from tools.train_utils.fastai_optim import OptimWrapper
@@ -21,9 +21,9 @@ from tools.train_utils import learning_schedules_fastai as lsf
 
 parser = argparse.ArgumentParser(description="arg parser")
 parser.add_argument('--cfg_file', type=str, default='cfgs/default.yaml', help='specify the config for training')
-parser.add_argument("--train_mode", type=str, default='rpn', required=True, help="specify the training mode")
-parser.add_argument("--batch_size", type=int, default=16, required=True, help="batch size for training")
-parser.add_argument("--epochs", type=int, default=200, required=True, help="Number of epochs to train for")
+parser.add_argument("--train_mode", type=str, default='rpn', required=False, help="specify the training mode")
+parser.add_argument("--batch_size", type=int, default=16, required=False, help="batch size for training")
+parser.add_argument("--epochs", type=int, default=200, required=False, help="Number of epochs to train for")
 
 parser.add_argument('--workers', type=int, default=8, help='number of workers for dataloader')
 parser.add_argument("--ckpt_save_interval", type=int, default=5, help="number of training epochs")
@@ -33,7 +33,7 @@ parser.add_argument('--mgpus', action='store_true', default=False, help='whether
 parser.add_argument("--ckpt", type=str, default=None, help="continue training from this checkpoint")
 parser.add_argument("--rpn_ckpt", type=str, default=None, help="specify the well-trained rpn checkpoint")
 
-parser.add_argument("--gt_database", type=str, default='gt_database/train_gt_database_3level_Car.pkl',
+parser.add_argument("--gt_database", type=str, default='gt_database/train_gt_database_3level_reg_dump.pkl',
                     help='generated gt database for augmentation')
 parser.add_argument("--rcnn_training_roi_dir", type=str, default=None,
                     help='specify the saved rois for rcnn training when using rcnn_offline mode')
@@ -62,18 +62,19 @@ def create_dataloader(logger):
     DATA_PATH = os.path.join('../', 'data')
 
     # create dataloader
-    train_set = KittiRCNNDataset(root_dir=DATA_PATH, npoints=cfg.RPN.NUM_POINTS, split=cfg.TRAIN.SPLIT, mode='TRAIN',
+    train_set = BumpRCNNDataset(root_dir=DATA_PATH, npoints=cfg.RPN.NUM_POINTS, split=cfg.TRAIN.SPLIT, mode='TRAIN',
                                  logger=logger,
                                  classes=cfg.CLASSES,
                                  rcnn_training_roi_dir=args.rcnn_training_roi_dir,
                                  rcnn_training_feature_dir=args.rcnn_training_feature_dir,
                                  gt_database_dir=args.gt_database)
+    print(train_set.num_samples)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, pin_memory=True,
                               num_workers=args.workers, shuffle=True, collate_fn=train_set.collate_batch,
                               drop_last=True)
 
     if args.train_with_eval:
-        test_set = KittiRCNNDataset(root_dir=DATA_PATH, npoints=cfg.RPN.NUM_POINTS, split=cfg.TRAIN.VAL_SPLIT, mode='EVAL',
+        test_set = BumpRCNNDataset(root_dir=DATA_PATH, npoints=cfg.RPN.NUM_POINTS, split=cfg.TRAIN.VAL_SPLIT, mode='EVAL',
                                     logger=logger,
                                     classes=cfg.CLASSES,
                                     rcnn_eval_roi_dir=args.rcnn_eval_roi_dir,

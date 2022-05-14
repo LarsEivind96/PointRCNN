@@ -10,7 +10,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--save_dir', type=str, default='./gt_database')
-parser.add_argument('--class_name', type=str, default='Car')
+parser.add_argument('--class_name', type=str, default='reg_dump')
 parser.add_argument('--split', type=str, default='train')
 args = parser.parse_args()
 
